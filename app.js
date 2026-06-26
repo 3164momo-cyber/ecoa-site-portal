@@ -43,14 +43,15 @@
     address: ["物件住所", "物件 住所", "建設地 住所", "建設地住所", "住所", "所在地", "現場住所", "address"],
     assignee: ["役割:工事", "役割：工事", "役割 工事", "工事担当", "現場担当", "施工担当", "担当者", "担当", "責任者", "assignee", "person"],
     salesAssignee: ["役割:営業", "役割：営業", "役割 営業", "営業担当", "営業", "営業者", "sales_assignee", "salesperson", "sales"],
+    designAssignee: ["役割:設計", "役割：設計", "役割 設計", "設計担当", "設計", "設計者", "design_assignee", "designer"],
     status: ["案件フロー", "ステータス", "状態", "進捗", "状況", "status", "flow"],
     note: ["備考", "メモ", "コメント", "note", "remarks"],
     lat: ["物件緯度", "物件 緯度", "緯度", "lat", "latitude"],
     lng: ["物件経度", "物件 経度", "経度", "lng", "lon", "longitude"]
   };
 
-  const VERSION_LABEL = "Version 1.0";
-  const STORAGE_KEY = "ecoa-site-portal:lastData:v1";
+  const VERSION_LABEL = "Version 8.0";
+  const STORAGE_KEY = "ecoa-site-portal:lastData:v8";
   const HOKKAIDO_CENTER = [43.06417, 141.34694];
   const HOKKAIDO_ZOOM = 8;
   const UNSET_STATUS = "ステータス未設定";
@@ -231,10 +232,14 @@
 
   async function readDataFile(file) {
     const name = String(file.name || "").toLowerCase();
-    if (!name.endsWith(".csv")) {
-      throw new Error("ANDPADデータはCSV形式で保存してから読み込んでください。Excel（.xlsx）は読み込めません。");
+    const type = String(file.type || "").toLowerCase();
+    if (name.endsWith(".xlsx")) {
+      return readXlsxFile(file);
     }
-    return parseCsv(await readCsvFile(file));
+    if (name.endsWith(".csv") || type.includes("csv") || !name) {
+      return parseCsv(await readCsvFile(file));
+    }
+    throw new Error("ANDPADデータはExcel（.xlsx）またはCSVで読み込んでください。");
   }
 
   function loadCsvText(text, message) {
@@ -304,6 +309,134 @@
     return rows;
   }
 
+  async function readXlsxFile(file) {
+    if (typeof DecompressionStream !== "function") {
+      throw new Error("このブラウザではExcel読込に対応していません。CSVで取り込んでください。");
+    }
+
+    const buffer = await file.arrayBuffer();
+    const entries = readZipDirectory(buffer);
+    const sheetName = Array.from(entries.keys())
+      .filter((name) => /^xl\/worksheets\/sheet\d+\.xml$/i.test(name))
+      .sort((a, b) => a.localeCompare(b, "en", { numeric: true }))[0];
+
+    if (!sheetName) {
+      throw new Error("Excel内にワークシートが見つかりません。");
+    }
+
+    const [sharedXml, sheetXml] = await Promise.all([
+      entries.has("xl/sharedStrings.xml") ? inflateZipEntry(buffer, entries.get("xl/sharedStrings.xml")) : "",
+      inflateZipEntry(buffer, entries.get(sheetName))
+    ]);
+
+    return parseXlsxSheet(sheetXml, parseSharedStrings(sharedXml));
+  }
+
+  function readZipDirectory(buffer) {
+    const view = new DataView(buffer);
+    let eocdOffset = -1;
+    for (let index = view.byteLength - 22; index >= 0; index -= 1) {
+      if (view.getUint32(index, true) === 0x06054b50) {
+        eocdOffset = index;
+        break;
+      }
+    }
+
+    if (eocdOffset < 0) {
+      throw new Error("Excelファイルを読み取れませんでした。");
+    }
+
+    const entryCount = view.getUint16(eocdOffset + 10, true);
+    let offset = view.getUint32(eocdOffset + 16, true);
+    const decoder = new TextDecoder("utf-8");
+    const entries = new Map();
+
+    for (let count = 0; count < entryCount; count += 1) {
+      if (view.getUint32(offset, true) !== 0x02014b50) break;
+      const method = view.getUint16(offset + 10, true);
+      const compressedSize = view.getUint32(offset + 20, true);
+      const fileNameLength = view.getUint16(offset + 28, true);
+      const extraLength = view.getUint16(offset + 30, true);
+      const commentLength = view.getUint16(offset + 32, true);
+      const localHeaderOffset = view.getUint32(offset + 42, true);
+      const nameBytes = new Uint8Array(buffer, offset + 46, fileNameLength);
+      const name = decoder.decode(nameBytes).replace(/\\/g, "/");
+      entries.set(name, { method, compressedSize, localHeaderOffset });
+      offset += 46 + fileNameLength + extraLength + commentLength;
+    }
+
+    return entries;
+  }
+
+  async function inflateZipEntry(buffer, entry) {
+    const view = new DataView(buffer);
+    const offset = entry.localHeaderOffset;
+    if (view.getUint32(offset, true) !== 0x04034b50) {
+      throw new Error("Excelファイル内のデータを読み取れませんでした。");
+    }
+
+    const fileNameLength = view.getUint16(offset + 26, true);
+    const extraLength = view.getUint16(offset + 28, true);
+    const dataStart = offset + 30 + fileNameLength + extraLength;
+    const compressed = new Uint8Array(buffer, dataStart, entry.compressedSize);
+
+    if (entry.method === 0) {
+      return new TextDecoder("utf-8").decode(compressed);
+    }
+    if (entry.method !== 8) {
+      throw new Error("対応していないExcel圧縮形式です。CSVで取り込んでください。");
+    }
+
+    const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return new Response(stream).text();
+  }
+
+  function parseSharedStrings(xmlText) {
+    if (!xmlText) return [];
+    const xml = new DOMParser().parseFromString(xmlText, "application/xml");
+    return Array.from(xml.getElementsByTagName("si")).map((item) => {
+      return Array.from(item.getElementsByTagName("t")).map((textNode) => textNode.textContent || "").join("");
+    });
+  }
+
+  function parseXlsxSheet(xmlText, sharedStrings) {
+    const xml = new DOMParser().parseFromString(xmlText, "application/xml");
+    if (xml.getElementsByTagName("parsererror").length) {
+      throw new Error("Excelシートの解析に失敗しました。CSVで取り込んでください。");
+    }
+
+    return Array.from(xml.getElementsByTagName("row")).map((rowNode) => {
+      const row = [];
+      Array.from(rowNode.getElementsByTagName("c")).forEach((cellNode, orderIndex) => {
+        const cellRef = cellNode.getAttribute("r") || "";
+        const columnIndex = getExcelColumnIndex(cellRef) ?? orderIndex;
+        const type = cellNode.getAttribute("t") || "";
+        let value = "";
+
+        if (type === "inlineStr") {
+          value = Array.from(cellNode.getElementsByTagName("t")).map((textNode) => textNode.textContent || "").join("");
+        } else {
+          const valueNode = cellNode.getElementsByTagName("v")[0];
+          value = valueNode ? valueNode.textContent || "" : "";
+          if (type === "s") {
+            value = sharedStrings[Number(value)] || "";
+          }
+        }
+
+        row[columnIndex] = value;
+      });
+      return row.map((value) => value || "");
+    }).filter((row) => row.some((value) => String(value || "").trim() !== ""));
+  }
+
+  function getExcelColumnIndex(cellRef) {
+    const match = String(cellRef || "").match(/^([A-Z]+)/i);
+    if (!match) return null;
+    return Array.from(match[1].toUpperCase()).reduce((total, char) => {
+      return total * 26 + char.charCodeAt(0) - 64;
+    }, 0) - 1;
+  }
+
   function mapRows(rows) {
     if (rows.length === 0) return [];
 
@@ -318,6 +451,7 @@
         const address = buildAddress(addressPrefecture, rawAddress);
         const assignee = normalizePersonName(getCell(row, detection.columns.assignee));
         const salesAssignee = normalizePersonName(getCell(row, detection.columns.salesAssignee));
+        const designAssignee = normalizePersonName(getCell(row, detection.columns.designAssignee));
         const status = getCell(row, detection.columns.status) || UNSET_STATUS;
         const rawLat = getCell(row, detection.columns.lat);
         const rawLng = getCell(row, detection.columns.lng);
@@ -340,6 +474,7 @@
           assignee,
           fieldAssignee: assignee,
           salesAssignee,
+          designAssignee,
           status,
           note: getCell(row, detection.columns.note),
           municipality: extractMunicipality(address),
@@ -374,6 +509,7 @@
       status: 7,
       salesAssignee: 8,
       assignee: 9,
+      designAssignee: 10,
       note: -1
     };
     const fallback = hasHeader
@@ -743,18 +879,18 @@
     const linkButtons = andpadUrl
       ? `
         <div class="popup-actions">
-          <a class="popup-map-link" href="${escapeAttribute(andpadUrl)}" target="_blank" rel="noopener">ANDPAD現場</a>
-          <a class="popup-map-link nav-link" href="${escapeAttribute(scheduleUrl)}" target="_blank" rel="noopener">工程表</a>
+          <a class="popup-map-link" href="${escapeAttribute(andpadUrl)}" target="_blank" rel="noopener">ANDPADを開く</a>
+          <a class="popup-map-link nav-link" href="${escapeAttribute(scheduleUrl)}" target="_blank" rel="noopener">工程表を開く</a>
         </div>
       `
       : "";
     const rows = [
-      ["現場コード", site.code],
-      ["現場名", site.name],
+      ["案件番号", site.code],
+      ["案件名", site.name],
       ["住所", site.address || "住所未設定"],
-      ["現場担当", site.assignee],
+      ["工事担当", site.assignee],
       ["営業担当", site.salesAssignee],
-      ["ステータス", site.status],
+      ["案件ステータス", site.status],
       ["備考", site.note],
       ["地図表示", getGeocodeLabel(site)]
     ].filter(([, value]) => value);
@@ -772,7 +908,7 @@
     if (sites.length === 0) {
       const empty = document.createElement("div");
       empty.className = "empty-state";
-      empty.textContent = "CSVを取り込むと現場が表示されます";
+      empty.textContent = "ANDPADデータを取り込むと案件が表示されます";
       elements.siteList.append(empty);
       return;
     }
@@ -780,7 +916,7 @@
     if (filtered.length === 0) {
       const empty = document.createElement("div");
       empty.className = "empty-state";
-      empty.textContent = "該当する現場がありません";
+      empty.textContent = "該当する案件がありません";
       elements.siteList.append(empty);
       return;
     }
@@ -828,8 +964,8 @@
     const meta = document.createElement("div");
     meta.className = "site-meta";
     meta.append(
-      makeMetaLine(site.code ? `現場コード: ${site.code}` : "現場コード未設定"),
-      makeMetaLine(`現場担当: ${site.assignee}`),
+      makeMetaLine(site.code ? `案件番号: ${site.code}` : "案件番号未設定"),
+      makeMetaLine(`工事担当: ${site.assignee}`),
       makeMetaLine(`営業担当: ${site.salesAssignee || "担当者未設定"}`),
       makeMetaLine(site.address || "住所未設定"),
       makeMetaLine(getGeocodeLabel(site))
@@ -842,9 +978,9 @@
     mapButton.disabled = !hasMapPoint(site);
     actions.append(mapButton);
 
-    const andpadButton = createActionButton("ANDPAD現場", () => openAndpad(site), "primary-action");
+    const andpadButton = createActionButton("ANDPADを開く", () => openAndpad(site), "primary-action");
     andpadButton.disabled = !site.systemId;
-    const scheduleButton = createActionButton("工程表", () => openSchedule(site));
+    const scheduleButton = createActionButton("工程表を開く", () => openSchedule(site));
     scheduleButton.disabled = !site.systemId;
     actions.append(andpadButton, scheduleButton);
 
@@ -868,23 +1004,23 @@
     elements.assigneeDetailList.innerHTML = "";
 
     if (!selectedAssigneeDetail) {
-      elements.assigneeDetailTitle.textContent = "現場担当別物件";
+      elements.assigneeDetailTitle.textContent = "工事担当別物件";
       elements.clearAssigneeDetailButton.disabled = true;
       const empty = document.createElement("div");
       empty.className = "mini-empty";
-      empty.textContent = "現場担当名をクリックすると一覧を表示します";
+      empty.textContent = "工事担当名をクリックすると一覧を表示します";
       elements.assigneeDetailList.append(empty);
       return;
     }
 
     const assigned = sites.filter((site) => site.assignee === selectedAssigneeDetail);
-    elements.assigneeDetailTitle.textContent = `${selectedAssigneeDetail}の現場担当物件 ${assigned.length}件`;
+    elements.assigneeDetailTitle.textContent = `${selectedAssigneeDetail}の工事担当物件 ${assigned.length}件`;
     elements.clearAssigneeDetailButton.disabled = false;
 
     if (assigned.length === 0) {
       const empty = document.createElement("div");
       empty.className = "mini-empty";
-      empty.textContent = "現場担当物件はありません";
+      empty.textContent = "工事担当物件はありません";
       elements.assigneeDetailList.append(empty);
       return;
     }
@@ -1000,8 +1136,8 @@
 
     elements.detailMessage.textContent = "";
     elements.detailStatus.textContent = site.status || UNSET_STATUS;
-    elements.detailClientName.textContent = site.name || "施主名未設定";
-    elements.detailCode.textContent = site.code ? `現場コード: ${site.code}` : "現場コード未設定";
+    elements.detailClientName.textContent = site.name || "案件名未設定";
+    elements.detailCode.textContent = site.code ? `案件番号: ${site.code}` : "案件番号未設定";
     elements.detailCodeValue.textContent = site.code || "未設定";
     elements.detailOwnerValue.textContent = site.name || "未設定";
     elements.detailFieldAssignee.textContent = site.assignee || "担当者未設定";
@@ -1151,7 +1287,7 @@
 
   function exportVisibleCsv() {
     if (visibleSites.length === 0) return;
-    const headers = ["物件都道府県", "物件住所", "物件緯度", "物件経度", "システムID", "案件管理ID", "案件名", "案件フロー", "役割:営業", "役割:工事"];
+    const headers = ["物件都道府県", "物件住所", "物件緯度", "物件経度", "システムID", "案件管理ID", "案件名", "案件フロー", "役割:営業", "役割:工事", "役割:設計"];
     const rows = visibleSites.map((site) => [
       site.addressPrefecture,
       site.rawAddress || site.address,
@@ -1162,7 +1298,8 @@
       site.name,
       site.status,
       site.salesAssignee,
-      site.assignee
+      site.assignee,
+      site.designAssignee
     ]);
     const csv = [headers, ...rows].map((row) => row.map(escapeCsvCell).join(",")).join("\r\n");
     const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });

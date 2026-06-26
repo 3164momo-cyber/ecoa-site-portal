@@ -16,21 +16,21 @@
     <link rel="stylesheet" href="./style.css">
   </head>
   <body>
-    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 1.0">
+    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 8.0">
       <img class="splash-logo" src="./assets/ecoa-portal-logo-white.svg" alt="ecoa Portal">
-      <div class="splash-version">Version 1.0</div>
+      <div class="splash-version">Version 8.0</div>
     </div>
     <div class="app-shell">
       <aside class="sidebar" aria-label="現場管理パネル">
         <header class="app-header">
           <div class="brand-area">
-            <p class="eyebrow">Version 1.0</p>
+            <p class="eyebrow">Version 8.0</p>
             <h1 class="brand-title">
               <img class="brand-logo" src="./assets/ecoa-portal-logo.svg" alt="ecoa Portal">
             </h1>
             <div class="version-meta">
-              <div>Build 2026.06</div>
-              <div>最終更新：<span id="updateTimestamp">未更新</span></div>
+              <div>更新日：2026/06/26</div>
+              <div>最終読込：<span id="updateTimestamp">未更新</span></div>
             </div>
           </div>
           <button class="icon-button" id="fitMapButton" type="button" title="表示中のピンに合わせる" aria-label="表示中のピンに合わせる">
@@ -40,8 +40,8 @@
 
         <section class="control-block upload-block">
           <label class="file-button">
-            <input id="csvInput" type="file" accept=".csv,text/csv">
-            ANDPAD抽出CSV
+            <input id="csvInput" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            ANDPAD最新データ読込
           </label>
           <a class="secondary-button" href="./sample-sites.csv" download>サンプルCSV</a>
           <button id="exportCsvButton" class="secondary-button" type="button">表示CSV出力</button>
@@ -49,15 +49,15 @@
 
         <section class="control-block search-block">
           <label class="field-label" for="searchInput">検索</label>
-          <input id="searchInput" class="search-input" type="search" placeholder="現場コード・現場名・住所・現場担当・営業担当">
+          <input id="searchInput" class="search-input" type="search" placeholder="案件番号・案件名・住所・工事担当・営業担当">
         </section>
 
         <section class="control-block">
           <div class="section-heading">
-            <span>現場担当</span>
+            <span>工事担当</span>
             <button id="toggleAllButton" class="text-button" type="button">すべて非表示</button>
           </div>
-          <div id="assigneeFilters" class="assignee-grid" aria-label="現場担当フィルター"></div>
+          <div id="assigneeFilters" class="assignee-grid" aria-label="工事担当フィルター"></div>
         </section>
 
         <section class="control-block">
@@ -116,7 +116,7 @@
 
         <section class="control-block compact-block">
           <div class="section-heading">
-            <span id="assigneeDetailTitle">現場担当別物件</span>
+            <span id="assigneeDetailTitle">工事担当別物件</span>
             <button id="clearAssigneeDetailButton" class="text-button" type="button">解除</button>
           </div>
           <div id="assigneeDetailList" class="mini-list"></div>
@@ -132,7 +132,7 @@
         <section class="site-list-wrap">
           <div class="section-heading">
             <span>現場一覧</span>
-            <span id="statusText" class="status-text">CSVを取り込んでください</span>
+            <span id="statusText" class="status-text">ANDPADデータを取り込んでください</span>
           </div>
           <div id="siteList" class="site-list"></div>
         </section>
@@ -151,15 +151,15 @@
             </div>
             <dl class="detail-list">
               <div>
-                <dt>現場コード</dt>
+                <dt>案件番号</dt>
                 <dd id="detailCodeValue">-</dd>
               </div>
               <div>
-                <dt>現場名／施主名</dt>
+                <dt>案件名</dt>
                 <dd id="detailOwnerValue">-</dd>
               </div>
               <div>
-                <dt>現場担当</dt>
+                <dt>工事担当</dt>
                 <dd id="detailFieldAssignee">-</dd>
               </div>
               <div>
@@ -167,7 +167,7 @@
                 <dd id="detailSalesAssignee">-</dd>
               </div>
               <div>
-                <dt>ステータス</dt>
+                <dt>案件ステータス</dt>
                 <dd id="detailStatusValue">-</dd>
               </div>
               <div>
@@ -176,8 +176,8 @@
               </div>
             </dl>
             <div class="detail-actions">
-              <button id="detailAndpadButton" class="detail-button andpad-button" type="button">📄 ANDPAD現場</button>
-              <button id="detailScheduleButton" class="detail-button schedule-button" type="button">📅 工程表</button>
+              <button id="detailAndpadButton" class="detail-button andpad-button" type="button">📄 ANDPADを開く</button>
+              <button id="detailScheduleButton" class="detail-button schedule-button" type="button">📅 工程表を開く</button>
             </div>
             <div id="detailMessage" class="detail-message" aria-live="polite"></div>
           </div>

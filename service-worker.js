@@ -1,4 +1,4 @@
-const CACHE_NAME = "ecoa-site-portal-v1-rc";
+const CACHE_NAME = "ecoa-site-portal-v8";
 const APP_ASSETS = [
   "./",
   "./index.html",

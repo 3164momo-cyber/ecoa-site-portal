@@ -1,7 +1,7 @@
 {
   "name": "ecoa Site Portal",
   "short_name": "ecoa Portal",
-  "description": "ANDPAD CSVから現場検索、地図表示、ANDPAD現場、工程表へ移動する社内用ポータルです。",
+  "description": "ANDPAD Excel/CSVから案件検索、地図表示、ANDPAD、工程表へ移動する社内用ポータルです。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
