@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ecoa Portal</title>
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ecoa Portal">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./icons/favicon.ico">
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <link
+      rel="stylesheet"
+      href="./vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 1.0">
+      <img class="splash-logo" src="./assets/ecoa-portal-logo-white.svg" alt="ecoa Portal">
+      <div class="splash-version">Version 1.0</div>
+    </div>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="現場管理パネル">
+        <header class="app-header">
+          <div class="brand-area">
+            <p class="eyebrow">Version 1.0</p>
+            <h1 class="brand-title">
+              <img class="brand-logo" src="./assets/ecoa-portal-logo.svg" alt="ecoa Portal">
+            </h1>
+            <div class="version-meta">
+              <div>Build 2026.06</div>
+              <div>最終更新：<span id="updateTimestamp">未更新</span></div>
+            </div>
+          </div>
+          <button class="icon-button" id="fitMapButton" type="button" title="表示中のピンに合わせる" aria-label="表示中のピンに合わせる">
+            <span aria-hidden="true">⌖</span>
+          </button>
+        </header>
+
+        <section class="control-block upload-block">
+          <label class="file-button">
+            <input id="csvInput" type="file" accept=".csv,text/csv">
+            ANDPAD抽出CSV
+          </label>
+          <a class="secondary-button" href="./sample-sites.csv" download>サンプルCSV</a>
+          <button id="exportCsvButton" class="secondary-button" type="button">表示CSV出力</button>
+        </section>
+
+        <section class="control-block search-block">
+          <label class="field-label" for="searchInput">検索</label>
+          <input id="searchInput" class="search-input" type="search" placeholder="現場コード・現場名・住所・現場担当・営業担当">
+        </section>
+
+        <section class="control-block">
+          <div class="section-heading">
+            <span>現場担当</span>
+            <button id="toggleAllButton" class="text-button" type="button">すべて非表示</button>
+          </div>
+          <div id="assigneeFilters" class="assignee-grid" aria-label="現場担当フィルター"></div>
+        </section>
+
+        <section class="control-block">
+          <div class="section-heading">
+            <span>ステータス</span>
+            <button id="toggleStatusButton" class="text-button" type="button">すべて非表示</button>
+          </div>
+          <div id="statusFilters" class="filter-list" aria-label="ステータスフィルター"></div>
+        </section>
+
+        <section class="summary-strip" aria-label="集計">
+          <div>
+            <span id="visibleCount">0</span>
+            <small>一覧表示</small>
+          </div>
+          <div>
+            <span id="totalCount">0</span>
+            <small>総件数</small>
+          </div>
+          <div>
+            <span id="mapVisibleCount">0</span>
+            <small>地図表示</small>
+          </div>
+          <div>
+            <span id="geocodeFailCount">0</span>
+            <small>地図未表示</small>
+          </div>
+          <div>
+            <span id="pendingCount">0</span>
+            <small>座標あり</small>
+          </div>
+        </section>
+
+        <section class="control-block compact-block">
+          <div class="section-heading">
+            <span>取込状況</span>
+          </div>
+          <div class="debug-grid">
+            <div><span id="debugLoadedCount">0</span><small>読込件数</small></div>
+            <div><span id="debugGeocodeSuccessCount">0</span><small>座標あり</small></div>
+            <div><span id="debugGeocodeFailureCount">0</span><small>地図未表示</small></div>
+            <div><span id="debugCsvCoordinateCount">0</span><small>緯度経度あり</small></div>
+            <div><span id="debugMarkerCount">0</span><small>ピン生成</small></div>
+          </div>
+          <div class="debug-detail">
+            <div class="debug-row">
+              <span>ANDPADリンク</span>
+              <strong id="apiNameText">システムIDから自動生成</strong>
+            </div>
+            <div class="debug-row">
+              <span>Leaflet CSS</span>
+              <strong id="leafletCssStatus">未確認</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="control-block compact-block">
+          <div class="section-heading">
+            <span id="assigneeDetailTitle">現場担当別物件</span>
+            <button id="clearAssigneeDetailButton" class="text-button" type="button">解除</button>
+          </div>
+          <div id="assigneeDetailList" class="mini-list"></div>
+        </section>
+
+        <section class="control-block compact-block">
+          <div class="section-heading">
+            <span>市町村別件数</span>
+          </div>
+          <div id="municipalityStats" class="mini-list"></div>
+        </section>
+
+        <section class="site-list-wrap">
+          <div class="section-heading">
+            <span>現場一覧</span>
+            <span id="statusText" class="status-text">CSVを取り込んでください</span>
+          </div>
+          <div id="siteList" class="site-list"></div>
+        </section>
+      </aside>
+
+      <main class="map-area">
+        <div id="map" aria-label="現場地図"></div>
+        <div id="mapNotice" class="map-notice" hidden></div>
+        <aside id="siteDetailPanel" class="detail-panel" aria-label="現場詳細" hidden>
+          <button id="closeDetailButton" class="detail-close" type="button" aria-label="現場詳細を閉じる">×</button>
+          <div class="detail-card">
+            <div class="detail-heading">
+              <span id="detailStatus" class="status-pill">未選択</span>
+              <h2 id="detailClientName">現場を選択してください</h2>
+              <p id="detailCode">-</p>
+            </div>
+            <dl class="detail-list">
+              <div>
+                <dt>現場コード</dt>
+                <dd id="detailCodeValue">-</dd>
+              </div>
+              <div>
+                <dt>現場名／施主名</dt>
+                <dd id="detailOwnerValue">-</dd>
+              </div>
+              <div>
+                <dt>現場担当</dt>
+                <dd id="detailFieldAssignee">-</dd>
+              </div>
+              <div>
+                <dt>営業担当</dt>
+                <dd id="detailSalesAssignee">-</dd>
+              </div>
+              <div>
+                <dt>ステータス</dt>
+                <dd id="detailStatusValue">-</dd>
+              </div>
+              <div>
+                <dt>住所</dt>
+                <dd id="detailAddress">-</dd>
+              </div>
+            </dl>
+            <div class="detail-actions">
+              <button id="detailAndpadButton" class="detail-button andpad-button" type="button">📄 ANDPAD現場</button>
+              <button id="detailScheduleButton" class="detail-button schedule-button" type="button">📅 工程表</button>
+            </div>
+            <div id="detailMessage" class="detail-message" aria-live="polite"></div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="./vendor/leaflet/leaflet.js"></script>
+    <script src="./app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js")
+            .then(() => console.log("Service Worker registered"))
+            .catch((error) => console.error("Service Worker registration failed:", error));
+        });
+      }
+      window.addEventListener("load", () => {
+        window.setTimeout(() => {
+          const splash = document.getElementById("splashScreen");
+          if (!splash) return;
+          splash.classList.add("is-hidden");
+          window.setTimeout(() => splash.remove(), 360);
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

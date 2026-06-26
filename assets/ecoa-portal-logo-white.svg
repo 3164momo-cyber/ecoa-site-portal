@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="145" viewBox="0 0 500 145" role="img" aria-labelledby="title desc">
+  <title id="title">ecoa Portal</title>
+  <desc id="desc">white ecoa Portal splash logo</desc>
+  <g fill="#ffffff">
+    <text x="0" y="82" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="80" font-weight="900" letter-spacing="-5">ecoa</text>
+    <text x="228" y="80" font-family="Arial, Helvetica, sans-serif" font-size="49" font-weight="700" letter-spacing="11">PORT</text>
+    <g transform="translate(410 12)">
+      <path d="M26 0C12 0 2 10 2 24c0 19 24 43 24 43s24-24 24-43C50 10 40 0 26 0z"/>
+      <circle cx="26" cy="24" r="9" fill="#4CAF50"/>
+      <path d="M2 76 26 62 50 76" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter"/>
+      <path d="M8 80h36v15H8z"/>
+    </g>
+    <text x="466" y="80" font-family="Arial, Helvetica, sans-serif" font-size="49" font-weight="700">L</text>
+    <text x="175" y="124" font-family="Yu Gothic, Meiryo, Arial, sans-serif" font-size="25" font-weight="700" letter-spacing="5">エコアポータル</text>
+  </g>
+</svg>
