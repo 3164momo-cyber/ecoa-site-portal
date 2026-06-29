@@ -1,4 +1,5 @@
-const CACHE_NAME = "ecoa-site-portal-v8";
+const CACHE_NAME = "ecoa-site-portal-v8.1";
+const STANDARD_DATA_PATH = "/data/sites.csv";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +7,7 @@ const APP_ASSETS = [
   "./app.js",
   "./manifest.json",
   "./sample-sites.csv",
+  "./data/sites.csv",
   "./assets/ecoa-portal-logo.svg",
   "./assets/ecoa-portal-logo-white.svg",
   "./assets/ecoa-brand-guide.png",
@@ -39,6 +41,20 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.pathname.endsWith(STANDARD_DATA_PATH)) {
+    const standardDataUrl = new URL("./data/sites.csv", self.registration.scope).href;
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type === "opaque") return response;
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(standardDataUrl, copy));
+        return response;
+      }).catch(() => caches.match(standardDataUrl))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cached) => {

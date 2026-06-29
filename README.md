@@ -1,15 +1,17 @@
 # ecoa Site Portal
 
-Version 8.0
+Version 8.1
 
 `ecoa Portal` は、ANDPADから出力した最新ExcelまたはCSVを読み込み、案件検索、地図表示、ANDPAD、工程表へすばやく移動するための社内用ポータルです。
 
 ## Ver8の運用方針
 
 - ANDPADから出力した最新データを唯一のマスターデータとして使用します。
+- GitHub Pages上では `data/sites.csv` を標準データとして自動読み込みします。
 - 現場座標マスターCSVとの照合や緯度経度補完は行いません。
 - `物件緯度` と `物件経度` をそのまま地図ピンに使用します。
-- 担当者変更、営業担当変更、ステータス変更、住所変更、新規案件追加は、ANDPAD最新データを再読込するだけで反映されます。
+- 全社共有する場合は、管理者が `data/sites.csv` を更新します。
+- 手動読込したExcel/CSVは、その端末の表示だけを一時的に上書きします。
 
 ## 起動方法
 
@@ -31,13 +33,26 @@ GitHub Pagesで公開して使う場合は、リポジトリ直下に `index.htm
 
 相対パスで構成しているため、GitHub Pagesのサブパス公開でもCSS、JavaScript、manifest、Service Worker、アイコンを読み込めます。
 
-## データ読込手順
+## 全社共有データの更新手順
+
+1. ANDPADから最新データを出力します。
+2. 必要に応じてCSV形式にします。
+3. ファイル名を `sites.csv` にします。
+4. GitHubリポジトリ内の `data/sites.csv` を差し替えます。
+5. GitHubへコミットします。
+6. GitHub Pagesの公開URLを開くと、全員が同じ最新データを自動読込します。
+
+全社共有する場合は、各端末で手動読込するのではなく `data/sites.csv` を更新してください。
+
+## 手動データ読込手順
 
 1. ANDPADから最新データを出力します。
 2. `ecoa Portal` を開きます。
 3. `ANDPAD最新データ読込` ボタンを押します。
 4. Excel（`.xlsx`）またはCSV（`.csv`）を選択します。
-5. 案件一覧、地図ピン、件数表示が更新されることを確認します。
+5. 案件一覧、地図ピン、件数表示が一時的に上書きされることを確認します。
+
+手動読込はその端末の表示だけに反映されます。GitHub Pages上の標準データは変更されません。
 
 ## 使用列
 
@@ -117,7 +132,7 @@ GitHub Pagesで公開して使う場合は、リポジトリ直下に `index.htm
 - manifest: `manifest.json`
 - Service Worker: `service-worker.js`
 - アイコン: `icons/icon-192.png`、`icons/icon-512.png`、`icons/apple-touch-icon.png`、`icons/favicon.ico`
-- スプラッシュ画面: `ecoa Portal / Version 8.0`
+- スプラッシュ画面: `ecoa Portal / Version 8.1`
 
 ## スマホでの使い方
 
@@ -139,6 +154,7 @@ PWAとしてホーム画面に追加する場合は、GitHub PagesなどHTTPSで
 ## 主な機能
 
 - ANDPAD最新Excel/CSV読込
+- `data/sites.csv` の自動読込
 - OpenStreetMap + Leafletによる地図表示
 - 物件緯度・物件経度によるピン表示
 - ANDPADを開くボタン

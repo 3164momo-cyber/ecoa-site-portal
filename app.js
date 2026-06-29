@@ -50,8 +50,8 @@
     lng: ["物件経度", "物件 経度", "経度", "lng", "lon", "longitude"]
   };
 
-  const VERSION_LABEL = "Version 8.0";
-  const STORAGE_KEY = "ecoa-site-portal:lastData:v8";
+  const VERSION_LABEL = "Version 8.1";
+  const STANDARD_DATA_URL = "./data/sites.csv";
   const HOKKAIDO_CENTER = [43.06417, 141.34694];
   const HOKKAIDO_ZOOM = 8;
   const UNSET_STATUS = "ステータス未設定";
@@ -141,19 +141,9 @@
     renderStatusFilters(getCurrentStatuses());
     bindEvents();
 
-    const lastData = localStorage.getItem(STORAGE_KEY);
-    if (lastData) {
-      try {
-        const saved = JSON.parse(lastData);
-        lastUpdatedAt = saved.updatedAt || "";
-        loadRows(saved.rows || [], "前回のANDPADデータを表示しています");
-      } catch (error) {
-        loadCsvText(lastData, "前回のCSVを表示しています");
-      }
-    } else {
-      updateTimestampDisplay();
-      render();
-    }
+    updateTimestampDisplay();
+    render();
+    loadStandardData();
   }
 
   function bindEvents() {
@@ -164,8 +154,7 @@
       try {
         const rows = await readDataFile(file);
         lastUpdatedAt = new Date().toISOString();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ name: file.name, rows, updatedAt: lastUpdatedAt }));
-        loadRows(rows, `${file.name} を取り込みました`);
+        loadRows(rows, `${file.name} を一時データとして取り込みました`);
       } catch (error) {
         setStatus(error && error.message ? error.message : "ファイルを読み込めませんでした");
         logDebug("data file read error", { error: error && error.message ? error.message : String(error) });
@@ -228,6 +217,36 @@
     }
 
     return new TextDecoder("utf-8").decode(buffer);
+  }
+
+  async function loadStandardData() {
+    setStatus("標準データ data/sites.csv を確認しています");
+
+    try {
+      const response = await fetch(`${STANDARD_DATA_URL}?updated=${Date.now()}`, {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        const message = response.status === 404
+          ? "data/sites.csv が見つかりません。手動読込できます"
+          : `data/sites.csv を読み込めませんでした（HTTP ${response.status}）`;
+        setStatus(message);
+        logDebug("standard data not loaded", { status: response.status, url: STANDARD_DATA_URL });
+        return;
+      }
+
+      const text = await response.text();
+      const lastModified = response.headers.get("last-modified");
+      const modifiedDate = lastModified ? new Date(lastModified) : null;
+      lastUpdatedAt = modifiedDate && !Number.isNaN(modifiedDate.getTime())
+        ? modifiedDate.toISOString()
+        : new Date().toISOString();
+      loadRows(parseCsv(text), "data/sites.csv を自動読込しました");
+    } catch (error) {
+      setStatus("data/sites.csv を自動読込できませんでした。手動読込できます");
+      logDebug("standard data read error", { error: error && error.message ? error.message : String(error) });
+    }
   }
 
   async function readDataFile(file) {
