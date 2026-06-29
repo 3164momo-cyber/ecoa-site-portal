@@ -34,7 +34,7 @@
     lng: ["物件経度", "物件 経度", "経度", "lng", "lon", "longitude"]
   };
 
-  const VERSION_LABEL = "Version 8.2";
+  const VERSION_LABEL = "Version 8.2.1";
   const STANDARD_DATA_URL = "./data/sites.csv";
   const HOKKAIDO_CENTER = [43.06417, 141.34694];
   const HOKKAIDO_ZOOM = 8;
@@ -123,7 +123,7 @@
     });
 
     activeStatuses = new Set(getCurrentStatuses());
-    renderAssigneeFilters(getCurrentAssignees());
+    renderAssigneeFilters();
     renderStatusFilters(getCurrentStatuses());
     bindEvents();
 
@@ -166,7 +166,7 @@
     elements.toggleAllButton.addEventListener("click", () => {
       const assignees = getCurrentAssignees();
       activeAssignees = activeAssignees.size === assignees.length ? new Set() : new Set(assignees);
-      renderAssigneeFilters(assignees);
+      renderAssigneeFilters();
       render();
     });
 
@@ -280,7 +280,7 @@
     selectedSiteId = "";
     activeAssignees = new Set(getCurrentAssignees());
     activeStatuses = new Set(getCurrentStatuses());
-    renderAssigneeFilters(getCurrentAssignees());
+    renderAssigneeFilters();
     renderStatusFilters(getCurrentStatuses());
     setStatus(message);
     updateTimestampDisplay();
@@ -718,11 +718,12 @@
     }
   }
 
-  function renderAssigneeFilters(assignees) {
-    const counts = countBy(sites, "assignee");
+  function renderAssigneeFilters() {
+    const assigneeItems = buildAssigneeFilterItems();
+    const assignees = assigneeItems.map((item) => item.name);
     elements.assigneeFilters.innerHTML = "";
 
-    if (assignees.length === 0) {
+    if (assigneeItems.length === 0) {
       const empty = document.createElement("div");
       empty.className = "mini-empty";
       empty.textContent = "ANDPADデータ読込後に工事担当を表示します";
@@ -731,8 +732,7 @@
       return;
     }
 
-    assignees.forEach((assignee) => {
-      const countValue = counts.get(assignee) || 0;
+    assigneeItems.forEach(({ name: assignee, count: countValue }) => {
       const item = document.createElement("div");
       item.className = "assignee-item";
       item.title = `${assignee}: ${countValue}件`;
@@ -822,7 +822,7 @@
 
     renderMarkers(filtered);
     renderSiteList(filtered);
-    renderAssigneeFilters(getCurrentAssignees());
+    renderAssigneeFilters();
     renderStatusFilters(getCurrentStatuses());
     renderAssigneeDetail();
     renderMunicipalityStats(filtered);
@@ -1350,19 +1350,29 @@
   }
 
   function getCurrentAssignees() {
+    return buildAssigneeFilterItems().map((item) => item.name);
+  }
+
+  function buildAssigneeFilterItems() {
+    const counts = new Map();
+    const orderedNames = [];
     const seen = new Set();
-    const assignees = [];
 
     sites.forEach((site) => {
-      const assignee = site.assignee || "担当者未設定";
+      const assignee = normalizePersonName(site.assignee);
+      counts.set(assignee, (counts.get(assignee) || 0) + 1);
       if (seen.has(assignee)) return;
       seen.add(assignee);
-      assignees.push(assignee);
+      orderedNames.push(assignee);
     });
 
-    return assignees
+    return orderedNames
       .filter((assignee) => assignee !== "担当者未設定")
-      .concat(assignees.includes("担当者未設定") ? ["担当者未設定"] : []);
+      .concat(orderedNames.includes("担当者未設定") ? ["担当者未設定"] : [])
+      .map((name) => ({
+        name,
+        count: counts.get(name) || 0
+      }));
   }
 
   function getCurrentStatuses() {

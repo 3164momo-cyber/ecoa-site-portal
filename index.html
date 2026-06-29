@@ -13,18 +13,18 @@
     <link
       rel="stylesheet"
       href="./vendor/leaflet/leaflet.css">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./style.css?v=8.2.1">
   </head>
   <body>
-    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 8.1">
+    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 8.2.1">
       <img class="splash-logo" src="./assets/ecoa-portal-logo-white.svg" alt="ecoa Portal">
-      <div class="splash-version">Version 8.1</div>
+      <div class="splash-version">Version 8.2.1</div>
     </div>
     <div class="app-shell">
       <aside class="sidebar" aria-label="現場管理パネル">
         <header class="app-header">
           <div class="brand-area">
-            <p class="eyebrow">Version 8.1</p>
+            <p class="eyebrow">Version 8.2.1</p>
             <h1 class="brand-title">
               <img class="brand-logo" src="./assets/ecoa-portal-logo.svg" alt="ecoa Portal">
             </h1>
@@ -47,26 +47,30 @@
           <button id="exportCsvButton" class="secondary-button" type="button">表示CSV出力</button>
         </section>
 
-        <section class="control-block search-block">
-          <label class="field-label" for="searchInput">検索</label>
-          <input id="searchInput" class="search-input" type="search" placeholder="案件番号・案件名・住所・工事担当・営業担当">
-        </section>
+        <button id="mobileFilterToggle" class="mobile-filter-toggle" type="button" aria-controls="filterPanel" aria-expanded="false">検索・絞り込み</button>
 
-        <section class="control-block">
-          <div class="section-heading">
-            <span>工事担当</span>
-            <button id="toggleAllButton" class="text-button" type="button">すべて非表示</button>
-          </div>
-          <div id="assigneeFilters" class="assignee-grid" aria-label="工事担当フィルター"></div>
-        </section>
+        <div id="filterPanel" class="filter-panel">
+          <section class="control-block search-block">
+            <label class="field-label" for="searchInput">検索</label>
+            <input id="searchInput" class="search-input" type="search" placeholder="案件番号・お客様名・住所・工事担当・営業担当">
+          </section>
 
-        <section class="control-block">
-          <div class="section-heading">
-            <span>ステータス</span>
-            <button id="toggleStatusButton" class="text-button" type="button">すべて非表示</button>
-          </div>
-          <div id="statusFilters" class="filter-list" aria-label="ステータスフィルター"></div>
-        </section>
+          <section class="control-block">
+            <div class="section-heading">
+              <span>工事担当</span>
+              <button id="toggleAllButton" class="text-button" type="button">すべて非表示</button>
+            </div>
+            <div id="assigneeFilters" class="assignee-grid" aria-label="工事担当フィルター"></div>
+          </section>
+
+          <section class="control-block">
+            <div class="section-heading">
+              <span>ステータス</span>
+              <button id="toggleStatusButton" class="text-button" type="button">すべて非表示</button>
+            </div>
+            <div id="statusFilters" class="filter-list" aria-label="ステータスフィルター"></div>
+          </section>
+        </div>
 
         <section class="summary-strip" aria-label="集計">
           <div>
@@ -186,11 +190,11 @@
     </div>
 
     <script src="./vendor/leaflet/leaflet.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=8.2.1"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./service-worker.js")
+          navigator.serviceWorker.register("./service-worker.js?v=8.2.1")
             .then(() => console.log("Service Worker registered"))
             .catch((error) => console.error("Service Worker registration failed:", error));
         });

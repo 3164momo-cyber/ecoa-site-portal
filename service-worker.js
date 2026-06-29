@@ -1,10 +1,10 @@
-const CACHE_NAME = "ecoa-site-portal-v8.1";
+const CACHE_NAME = "ecoa-site-portal-v8.2.1";
 const STANDARD_DATA_PATH = "/data/sites.csv";
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./style.css",
-  "./app.js",
+  "./style.css?v=8.2.1",
+  "./app.js?v=8.2.1",
   "./manifest.json",
   "./sample-sites.csv",
   "./data/sites.csv",
@@ -57,14 +57,11 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
+    fetch(event.request).then((response) => {
         if (!response || response.status !== 200 || response.type === "opaque") return response;
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         return response;
-      });
-    })
+      }).catch(() => caches.match(event.request))
   );
 });
