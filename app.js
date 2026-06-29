@@ -1,22 +1,6 @@
 (function () {
   "use strict";
 
-  const DEFAULT_ASSIGNEES = [
-    "田村",
-    "船木",
-    "伊藤",
-    "野口",
-    "三木",
-    "伝福",
-    "藤田",
-    "佐孝",
-    "黒畑",
-    "安楽",
-    "岡崎",
-    "西村",
-    "担当者未設定"
-  ];
-
   const COLORS = {
     "田村": "#0f766e",
     "船木": "#2563eb",
@@ -50,7 +34,7 @@
     lng: ["物件経度", "物件 経度", "経度", "lng", "lon", "longitude"]
   };
 
-  const VERSION_LABEL = "Version 8.1";
+  const VERSION_LABEL = "Version 8.2";
   const STANDARD_DATA_URL = "./data/sites.csv";
   const HOKKAIDO_CENTER = [43.06417, 141.34694];
   const HOKKAIDO_ZOOM = 8;
@@ -100,9 +84,11 @@
     municipalityStats: document.getElementById("municipalityStats")
   };
   elements.updateTimestamp = document.getElementById("updateTimestamp");
+  elements.mobileFilterToggle = document.getElementById("mobileFilterToggle");
+  elements.filterPanel = document.getElementById("filterPanel");
 
   let sites = [];
-  let activeAssignees = new Set(DEFAULT_ASSIGNEES);
+  let activeAssignees = new Set();
   let activeStatuses = new Set();
   let selectedAssigneeDetail = "";
   let selectedSiteId = "";
@@ -137,7 +123,7 @@
     });
 
     activeStatuses = new Set(getCurrentStatuses());
-    renderAssigneeFilters(DEFAULT_ASSIGNEES);
+    renderAssigneeFilters(getCurrentAssignees());
     renderStatusFilters(getCurrentStatuses());
     bindEvents();
 
@@ -167,6 +153,15 @@
       query = normalizeText(event.target.value);
       scheduleRender();
     });
+
+    if (elements.mobileFilterToggle && elements.filterPanel) {
+      elements.mobileFilterToggle.addEventListener("click", () => {
+        const isOpen = elements.filterPanel.classList.toggle("is-open");
+        elements.mobileFilterToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        elements.mobileFilterToggle.textContent = isOpen ? "検索・絞り込みを閉じる" : "検索・絞り込み";
+        refreshMapLayout(false, 120);
+      });
+    }
 
     elements.toggleAllButton.addEventListener("click", () => {
       const assignees = getCurrentAssignees();
@@ -583,10 +578,6 @@
         if (Number.isFinite(number) && number >= 41 && number <= 46) scores.lat[index] += 6;
         if (Number.isFinite(number) && number >= 139 && number <= 146) scores.lng[index] += 6;
         if (looksLikeAddress(value)) scores.address[index] += 5;
-        if (DEFAULT_ASSIGNEES.includes(value)) {
-          scores.assignee[index] += 6;
-          scores.salesAssignee[index] += 2;
-        }
         if (looksLikeStatus(value)) scores.status[index] += 4;
         if (looksLikeCode(value)) scores.code[index] += 2;
         if (looksLikeName(value)) scores.name[index] += 2;
@@ -730,6 +721,15 @@
   function renderAssigneeFilters(assignees) {
     const counts = countBy(sites, "assignee");
     elements.assigneeFilters.innerHTML = "";
+
+    if (assignees.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "mini-empty";
+      empty.textContent = "ANDPADデータ読込後に工事担当を表示します";
+      elements.assigneeFilters.append(empty);
+      elements.toggleAllButton.textContent = "すべて表示";
+      return;
+    }
 
     assignees.forEach((assignee) => {
       const countValue = counts.get(assignee) || 0;
@@ -1350,8 +1350,19 @@
   }
 
   function getCurrentAssignees() {
-    const imported = sites.map((site) => site.assignee).filter(Boolean);
-    return Array.from(new Set([...DEFAULT_ASSIGNEES, ...imported]));
+    const seen = new Set();
+    const assignees = [];
+
+    sites.forEach((site) => {
+      const assignee = site.assignee || "担当者未設定";
+      if (seen.has(assignee)) return;
+      seen.add(assignee);
+      assignees.push(assignee);
+    });
+
+    return assignees
+      .filter((assignee) => assignee !== "担当者未設定")
+      .concat(assignees.includes("担当者未設定") ? ["担当者未設定"] : []);
   }
 
   function getCurrentStatuses() {
