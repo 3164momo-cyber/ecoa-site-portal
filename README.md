@@ -1,10 +1,10 @@
 # ecoa Site Portal
 
-Version 8.2.1
+Version 9.0
 
 `ecoa Portal` は、ANDPADから出力した最新ExcelまたはCSVを読み込み、案件検索、地図表示、ANDPAD、工程表へすばやく移動するための社内用ポータルです。
 
-## Ver8の運用方針
+## Ver9の運用方針
 
 - ANDPADから出力した最新データを唯一のマスターデータとして使用します。
 - GitHub Pages上では `data/sites.csv` を標準データとして自動読み込みします。
@@ -13,6 +13,7 @@ Version 8.2.1
 - 全社共有する場合は、管理者が `data/sites.csv` を更新します。
 - 手動読込したExcel/CSVは、その端末の表示だけを一時的に上書きします。
 - 工事担当フィルターは、読み込んだCSV内の工事担当だけをゼロから集計して表示します。固定担当者一覧は使用しません。
+- 通常利用者は閲覧専用に近い画面です。`?admin=1` を付けた管理者モードだけ、ANDPAD最新データ読込、CSV出力、デバッグ情報を表示します。
 
 ## 起動方法
 
@@ -48,12 +49,28 @@ GitHub Pagesで公開して使う場合は、リポジトリ直下に `index.htm
 ## 手動データ読込手順
 
 1. ANDPADから最新データを出力します。
-2. `ecoa Portal` を開きます。
+2. 管理者URLで `ecoa Portal` を開きます。
 3. `ANDPAD最新データ読込` ボタンを押します。
 4. Excel（`.xlsx`）またはCSV（`.csv`）を選択します。
 5. 案件一覧、地図ピン、件数表示が一時的に上書きされることを確認します。
 
 手動読込はその端末の表示だけに反映されます。GitHub Pages上の標準データは変更されません。
+
+## 通常URLと管理者URL
+
+通常利用者:
+
+```text
+https://3164momo-cyber.github.io/ecoa-site-portal/
+```
+
+管理者:
+
+```text
+https://3164momo-cyber.github.io/ecoa-site-portal/?admin=1
+```
+
+通常URLでは `ANDPAD最新データ読込`、`表示CSV出力`、デバッグ情報を表示しません。管理者URLだけ、更新操作系ボタンとデバッグ情報を表示します。
 
 ## 使用列
 
@@ -135,7 +152,7 @@ GitHub Pagesで公開して使う場合は、リポジトリ直下に `index.htm
 - manifest: `manifest.json`
 - Service Worker: `service-worker.js`
 - アイコン: `icons/icon-192.png`、`icons/icon-512.png`、`icons/apple-touch-icon.png`、`icons/favicon.ico`
-- スプラッシュ画面: `ecoa Portal / Version 8.2.1`
+- スプラッシュ画面: `ecoa Portal / Version 9.0`
 
 ## スマホでの使い方
 
@@ -154,11 +171,11 @@ iPhone:
 
 PWAとしてホーム画面に追加する場合は、GitHub PagesなどHTTPSで公開されたURLから開いてください。
 
-スマホ表示では地図を優先して大きく表示します。検索、工事担当フィルター、ステータスフィルターは `検索・絞り込み` ボタンから開きます。案件詳細は地図下部のボトムシート形式で表示します。
+スマホ表示では左側に検索、工事担当フィルター、ステータスフィルター、エリア情報、表示件数をまとめ、右側に地図を大きく表示します。案件詳細は地図上の下部にコンパクト表示します。
 
 ## 主な機能
 
-- ANDPAD最新Excel/CSV読込
+- ANDPAD最新Excel/CSV読込（管理者モードのみ）
 - `data/sites.csv` の自動読込
 - OpenStreetMap + Leafletによる地図表示
 - 物件緯度・物件経度によるピン表示
@@ -170,7 +187,7 @@ PWAとしてホーム画面に追加する場合は、GitHub PagesなどHTTPSで
 - 担当者別件数、ステータス別件数
 - 市町村別件数集計
 - 案件一覧から選択して地図上の該当案件を選択
-- 表示中の案件だけCSV出力
+- 表示中の案件だけCSV出力（管理者モードのみ）
 - PWA対応
 
 ## ブランドデザイン

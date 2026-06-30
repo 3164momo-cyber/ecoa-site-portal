@@ -34,8 +34,9 @@
     lng: ["物件経度", "物件 経度", "経度", "lng", "lon", "longitude"]
   };
 
-  const VERSION_LABEL = "Version 8.2.1";
+  const VERSION_LABEL = "Version 9.0";
   const STANDARD_DATA_URL = "./data/sites.csv";
+  const IS_ADMIN_MODE = new URLSearchParams(window.location.search).get("admin") === "1";
   const HOKKAIDO_CENTER = [43.06417, 141.34694];
   const HOKKAIDO_ZOOM = 8;
   const UNSET_STATUS = "ステータス未設定";
@@ -86,6 +87,7 @@
   elements.updateTimestamp = document.getElementById("updateTimestamp");
   elements.mobileFilterToggle = document.getElementById("mobileFilterToggle");
   elements.filterPanel = document.getElementById("filterPanel");
+  document.body.classList.toggle("is-admin", IS_ADMIN_MODE);
 
   let sites = [];
   let activeAssignees = new Set();
@@ -126,6 +128,7 @@
     renderAssigneeFilters();
     renderStatusFilters(getCurrentStatuses());
     bindEvents();
+    applyAdminMode();
 
     updateTimestampDisplay();
     render();
@@ -194,6 +197,13 @@
       if (site) openSchedule(site);
     });
     window.addEventListener("resize", () => refreshMapLayout(false));
+  }
+
+  function applyAdminMode() {
+    if (!IS_ADMIN_MODE) {
+      elements.csvInput.disabled = true;
+      elements.exportCsvButton.disabled = true;
+    }
   }
 
   async function readCsvFile(file) {
@@ -833,7 +843,7 @@
     elements.mapVisibleCount.textContent = String(markerById.size);
     elements.geocodeFailCount.textContent = String(mapMissing);
     elements.pendingCount.textContent = String(getCsvCoordinateCount());
-    elements.exportCsvButton.disabled = filtered.length === 0;
+    elements.exportCsvButton.disabled = !IS_ADMIN_MODE || filtered.length === 0;
     renderDebugPanel();
 
     if (mapMissing > 0) {

@@ -243,6 +243,18 @@ h1 {
   display: none;
 }
 
+.admin-only {
+  display: none !important;
+}
+
+body.is-admin .admin-only {
+  display: block !important;
+}
+
+body.is-admin .upload-block.admin-only {
+  display: grid !important;
+}
+
 .section-heading {
   display: flex;
   align-items: center;
@@ -904,122 +916,270 @@ h1 {
 
 @media (max-width: 820px) {
   .app-shell {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(60vh, 68svh) auto;
-    height: auto;
-    min-height: 100vh;
+    grid-template-columns: minmax(136px, 38vw) minmax(0, 1fr);
+    grid-template-rows: 100svh;
+    height: 100svh;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .sidebar {
-    order: 2;
-    height: auto;
+    order: 1;
+    height: 100svh;
     min-height: 0;
-    border-top: 1px solid var(--line);
-    border-right: 0;
-    box-shadow: 0 -10px 24px rgba(36, 48, 35, 0.07);
+    overflow: auto;
+    border-top: 0;
+    border-right: 1px solid var(--line);
+    box-shadow: 8px 0 18px rgba(36, 48, 35, 0.08);
   }
 
   .map-area {
-    order: 1;
-    height: 68svh;
-    min-height: 60vh;
+    order: 2;
+    height: 100svh;
+    min-height: 0;
   }
 
   .detail-panel {
     top: auto;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    max-height: 56svh;
-    padding: 0 12px 12px;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 48svh;
+    padding: 0;
     overflow: auto;
-    border-radius: 18px 18px 0 0;
+    border-radius: 16px;
   }
 
   .detail-card {
-    border-radius: 18px 18px var(--radius) var(--radius);
-    padding: 18px;
+    gap: 8px;
+    border-radius: 16px;
+    padding: 12px;
   }
 
   .detail-close {
-    top: 8px;
-    right: 20px;
+    top: 6px;
+    right: 6px;
+    width: 30px;
+    height: 30px;
   }
 
   .app-header {
-    padding: 17px 16px 14px;
+    gap: 8px;
+    padding: 10px 8px 8px;
+  }
+
+  .brand-logo {
+    width: min(112px, 100%);
+  }
+
+  .eyebrow,
+  .version-meta {
+    font-size: 10px;
+  }
+
+  .icon-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
   }
 
   .control-block,
   .site-list-wrap {
-    padding-right: 16px;
-    padding-left: 16px;
+    padding-right: 8px;
+    padding-left: 8px;
   }
 
   .mobile-filter-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 48px;
-    margin: 12px 16px 0;
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    background: var(--accent);
-    color: #fff;
-    cursor: pointer;
-    font-weight: 900;
+    display: none;
   }
 
   .filter-panel {
-    display: none;
+    display: block;
   }
 
   .filter-panel.is-open {
     display: block;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--line);
-    background: var(--panel);
   }
 
   .filter-panel .control-block {
-    padding-top: 14px;
+    padding-top: 10px;
   }
 
   .search-input {
-    height: 48px;
-    font-size: 16px;
-  }
-
-  .site-actions {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .site-actions .action-button:first-child {
-    grid-column: 1 / -1;
-  }
-
-  .action-button {
-    min-height: 48px;
+    height: 38px;
+    padding: 0 8px;
     font-size: 13px;
   }
 
+  .field-label,
+  .section-heading {
+    font-size: 11px;
+  }
+
+  .section-heading {
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .text-button {
+    min-height: 26px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+
+  .site-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .site-actions .action-button:first-child {
+    grid-column: auto;
+  }
+
+  .action-button {
+    min-height: 38px;
+    font-size: 11px;
+  }
+
   .summary-strip {
-    margin-right: 16px;
-    margin-left: 16px;
+    margin-right: 8px;
+    margin-left: 8px;
   }
 
   .summary-strip,
   .debug-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .assignee-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 
   .filter-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .assignee-item,
+  .filter-item {
+    min-height: 30px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .assignee-item {
+    grid-template-columns: 14px 9px minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px 6px;
+  }
+
+  .filter-item {
+    grid-template-columns: 14px minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px 6px;
+  }
+
+  .assignee-item input,
+  .filter-item input {
+    width: 14px;
+    height: 14px;
+  }
+
+  .color-dot {
+    width: 9px;
+    height: 9px;
+  }
+
+  .summary-strip {
+    padding: 8px;
+  }
+
+  .summary-strip span,
+  .debug-grid span {
+    font-size: 16px;
+  }
+
+  .summary-strip small,
+  .debug-grid small {
+    font-size: 10px;
+  }
+
+  .compact-block {
+    padding-top: 10px;
+  }
+
+  .mini-list {
+    gap: 6px;
+  }
+
+  .site-list {
+    max-height: 42svh;
+  }
+
+  .site-card {
+    gap: 8px;
+    padding: 9px;
+    border-radius: 10px;
+  }
+
+  .site-title-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .site-title {
+    font-size: 13px;
+  }
+
+  .site-meta {
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .status-pill {
+    min-height: 22px;
+    padding: 0 7px;
+    font-size: 10px;
+  }
+
+  .detail-heading h2 {
+    font-size: 15px;
+  }
+
+  .detail-heading p,
+  .detail-list dd {
+    font-size: 11px;
+  }
+
+  .detail-list {
+    gap: 5px;
+  }
+
+  .detail-list div {
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .detail-list dt {
+    font-size: 10px;
+  }
+
+  .detail-button {
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .andpad-button {
+    min-height: 42px;
+  }
+
+  .map-notice {
+    right: 8px;
+    bottom: 8px;
+    max-width: calc(100% - 16px);
+    font-size: 11px;
   }
 }
 
@@ -1030,7 +1190,7 @@ h1 {
   }
 
   .assignee-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .site-actions,
@@ -1056,11 +1216,11 @@ h1 {
 
   .detail-panel {
     top: auto;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 12px;
+    right: 6px;
+    bottom: 6px;
+    left: 6px;
+    width: auto;
+    padding: 0;
   }
 
   h1 {

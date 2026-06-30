@@ -13,18 +13,18 @@
     <link
       rel="stylesheet"
       href="./vendor/leaflet/leaflet.css">
-    <link rel="stylesheet" href="./style.css?v=8.2.1">
+    <link rel="stylesheet" href="./style.css?v=9.0">
   </head>
   <body>
-    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 8.2.1">
+    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 9.0">
       <img class="splash-logo" src="./assets/ecoa-portal-logo-white.svg" alt="ecoa Portal">
-      <div class="splash-version">Version 8.2.1</div>
+      <div class="splash-version">Version 9.0</div>
     </div>
     <div class="app-shell">
       <aside class="sidebar" aria-label="現場管理パネル">
         <header class="app-header">
           <div class="brand-area">
-            <p class="eyebrow">Version 8.2.1</p>
+            <p class="eyebrow">Version 9.0</p>
             <h1 class="brand-title">
               <img class="brand-logo" src="./assets/ecoa-portal-logo.svg" alt="ecoa Portal">
             </h1>
@@ -38,7 +38,7 @@
           </button>
         </header>
 
-        <section class="control-block upload-block">
+        <section class="control-block upload-block admin-only">
           <label class="file-button">
             <input id="csvInput" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
             ANDPAD最新データ読込
@@ -95,7 +95,7 @@
           </div>
         </section>
 
-        <section class="control-block compact-block">
+        <section class="control-block compact-block admin-only">
           <div class="section-heading">
             <span>取込状況</span>
           </div>
@@ -190,11 +190,11 @@
     </div>
 
     <script src="./vendor/leaflet/leaflet.js"></script>
-    <script src="./app.js?v=8.2.1"></script>
+    <script src="./app.js?v=9.0"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./service-worker.js?v=8.2.1")
+          navigator.serviceWorker.register("./service-worker.js?v=9.0")
             .then(() => console.log("Service Worker registered"))
             .catch((error) => console.error("Service Worker registration failed:", error));
         });
