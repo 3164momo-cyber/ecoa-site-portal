@@ -34,8 +34,9 @@
     lng: ["物件経度", "物件 経度", "経度", "lng", "lon", "longitude"]
   };
 
-  const VERSION_LABEL = "Version 9.0";
+  const VERSION_LABEL = "Version 9.5";
   const STANDARD_DATA_URL = "./data/sites.csv";
+  const STANDARD_CSV_HEADERS = ["物件都道府県", "物件住所", "物件緯度", "物件経度", "システムID", "案件管理ID", "案件名", "案件フロー", "役割:営業", "役割:工事", "役割:設計"];
   const IS_ADMIN_MODE = new URLSearchParams(window.location.search).get("admin") === "1";
   const HOKKAIDO_CENTER = [43.06417, 141.34694];
   const HOKKAIDO_ZOOM = 8;
@@ -77,6 +78,7 @@
     toggleAllButton: document.getElementById("toggleAllButton"),
     toggleStatusButton: document.getElementById("toggleStatusButton"),
     exportCsvButton: document.getElementById("exportCsvButton"),
+    sharedCsvButton: document.getElementById("sharedCsvButton"),
     fitMapButton: document.getElementById("fitMapButton"),
     mapNotice: document.getElementById("mapNotice"),
     assigneeDetailTitle: document.getElementById("assigneeDetailTitle"),
@@ -186,6 +188,7 @@
     });
 
     elements.exportCsvButton.addEventListener("click", exportVisibleCsv);
+    elements.sharedCsvButton.addEventListener("click", exportSharedCsv);
     elements.fitMapButton.addEventListener("click", fitVisibleMarkers);
     elements.closeDetailButton.addEventListener("click", closeSiteDetail);
     elements.detailAndpadButton.addEventListener("click", () => {
@@ -203,6 +206,7 @@
     if (!IS_ADMIN_MODE) {
       elements.csvInput.disabled = true;
       elements.exportCsvButton.disabled = true;
+      elements.sharedCsvButton.disabled = true;
     }
   }
 
@@ -844,6 +848,7 @@
     elements.geocodeFailCount.textContent = String(mapMissing);
     elements.pendingCount.textContent = String(getCsvCoordinateCount());
     elements.exportCsvButton.disabled = !IS_ADMIN_MODE || filtered.length === 0;
+    elements.sharedCsvButton.disabled = !IS_ADMIN_MODE || sites.length === 0;
     renderDebugPanel();
 
     if (mapMissing > 0) {
@@ -1316,8 +1321,29 @@
 
   function exportVisibleCsv() {
     if (visibleSites.length === 0) return;
-    const headers = ["物件都道府県", "物件住所", "物件緯度", "物件経度", "システムID", "案件管理ID", "案件名", "案件フロー", "役割:営業", "役割:工事", "役割:設計"];
-    const rows = visibleSites.map((site) => [
+    const csv = createStandardCsv(visibleSites);
+    downloadCsv(csv, `現場マップ_絞り込み結果_${formatDate(new Date())}.csv`);
+  }
+
+  function exportSharedCsv() {
+    if (!IS_ADMIN_MODE) return;
+    if (sites.length === 0) {
+      setStatus("共有用CSVを作成するにはANDPAD最新データを読み込んでください");
+      return;
+    }
+
+    const csv = createStandardCsv(sites);
+    downloadCsv(csv, "sites.csv");
+    setStatus("共有用CSV sites.csv を作成しました");
+  }
+
+  function createStandardCsv(targetSites) {
+    const rows = targetSites.map(siteToStandardCsvRow);
+    return [STANDARD_CSV_HEADERS, ...rows].map((row) => row.map(escapeCsvCell).join(",")).join("\r\n");
+  }
+
+  function siteToStandardCsvRow(site) {
+    return [
       site.addressPrefecture,
       site.rawAddress || site.address,
       hasMapPoint(site) ? site.lat : "",
@@ -1329,13 +1355,15 @@
       site.salesAssignee,
       site.assignee,
       site.designAssignee
-    ]);
-    const csv = [headers, ...rows].map((row) => row.map(escapeCsvCell).join(",")).join("\r\n");
+    ];
+  }
+
+  function downloadCsv(csv, filename) {
     const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `現場マップ_絞り込み結果_${formatDate(new Date())}.csv`;
+    link.download = filename;
     document.body.append(link);
     link.click();
     link.remove();

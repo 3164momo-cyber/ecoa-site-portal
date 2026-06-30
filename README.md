@@ -1,10 +1,10 @@
 # ecoa Site Portal
 
-Version 9.0
+Version 9.5
 
 `ecoa Portal` は、ANDPADから出力した最新ExcelまたはCSVを読み込み、案件検索、地図表示、ANDPAD、工程表へすばやく移動するための社内用ポータルです。
 
-## Ver9の運用方針
+## Ver9.5の運用方針
 
 - ANDPADから出力した最新データを唯一のマスターデータとして使用します。
 - GitHub Pages上では `data/sites.csv` を標準データとして自動読み込みします。
@@ -13,7 +13,9 @@ Version 9.0
 - 全社共有する場合は、管理者が `data/sites.csv` を更新します。
 - 手動読込したExcel/CSVは、その端末の表示だけを一時的に上書きします。
 - 工事担当フィルターは、読み込んだCSV内の工事担当だけをゼロから集計して表示します。固定担当者一覧は使用しません。
-- 通常利用者は閲覧専用に近い画面です。`?admin=1` を付けた管理者モードだけ、ANDPAD最新データ読込、CSV出力、デバッグ情報を表示します。
+- 通常利用者は閲覧専用に近い画面です。`?admin=1` を付けた管理者モードだけ、ANDPAD最新データ読込、共有用CSV作成、CSV出力、デバッグ情報を表示します。
+- 同梱の `data/sites.csv` は本番差し替え用です。サンプルデータは入れていません。
+- Ver9.5ではGitHubトークンを使いません。管理者が作成した `sites.csv` をGitHubの `data/sites.csv` へ上書きアップロードする半自動更新方式です。
 
 ## 起動方法
 
@@ -39,12 +41,32 @@ GitHub Pagesで公開して使う場合は、リポジトリ直下に `index.htm
 
 1. ANDPADから最新データを出力します。
 2. 必要に応じてCSV形式にします。
-3. ファイル名を `sites.csv` にします。
-4. GitHubリポジトリ内の `data/sites.csv` を差し替えます。
-5. GitHubへコミットします。
-6. GitHub Pagesの公開URLを開くと、全員が同じ最新データを自動読込します。
+3. 管理者URLで `ecoa Portal` を開きます。
+4. `ANDPAD最新データ読込` で最新データを読み込みます。
+5. `共有用CSVを作成` を押します。
+6. `sites.csv` がダウンロードされます。
+7. GitHubリポジトリ内の `data/sites.csv` を、ダウンロードした `sites.csv` で上書きします。
+8. GitHubへコミットします。
+9. 1〜2分後にGitHub Pagesへ反映され、全員が同じ最新データを自動読込します。
 
 全社共有する場合は、各端末で手動読込するのではなく `data/sites.csv` を更新してください。
+
+管理者モードでANDPADデータを読み込んでも、GitHub上の `data/sites.csv` として自動保存されるわけではありません。GitHubリポジトリの `data/sites.csv` を更新しない限り、他の人の画面には反映されません。
+
+## 管理者向け: 共有用CSV作成
+
+管理者URLで表示される `共有用CSVを作成` ボタンは、読み込んだANDPAD最新データを `data/sites.csv` と同じ列順へ標準化し、ファイル名 `sites.csv` でダウンロードします。
+
+この `sites.csv` を GitHub の `data/sites.csv` に上書きアップロードすると、全社員の画面に反映されます。
+
+GitHub更新手順:
+
+1. GitHubの `data/sites.csv` を開きます。
+2. 右上の鉛筆マーク、または `Upload files` から `sites.csv` を上書きします。
+3. `Commit changes` を押します。
+4. 1〜2分後に全社員へ反映されます。
+
+Ver10ではGitHub APIを使って管理者ボタン1つで `data/sites.csv` を直接更新する構想です。Ver9.5では安全性を優先し、GitHubトークンを使わない方式にしています。
 
 ## 手動データ読込手順
 
@@ -70,7 +92,9 @@ https://3164momo-cyber.github.io/ecoa-site-portal/
 https://3164momo-cyber.github.io/ecoa-site-portal/?admin=1
 ```
 
-通常URLでは `ANDPAD最新データ読込`、`表示CSV出力`、デバッグ情報を表示しません。管理者URLだけ、更新操作系ボタンとデバッグ情報を表示します。
+通常URLでは `ANDPAD最新データ読込`、`共有用CSVを作成`、`表示CSV出力`、デバッグ情報を表示しません。管理者URLだけ、更新操作系ボタンとデバッグ情報を表示します。
+
+管理者画面にも「この sites.csv を GitHub の data/sites.csv に上書きアップロードすると、全社員の画面に反映されます。」と表示します。
 
 ## 使用列
 
@@ -152,7 +176,7 @@ https://3164momo-cyber.github.io/ecoa-site-portal/?admin=1
 - manifest: `manifest.json`
 - Service Worker: `service-worker.js`
 - アイコン: `icons/icon-192.png`、`icons/icon-512.png`、`icons/apple-touch-icon.png`、`icons/favicon.ico`
-- スプラッシュ画面: `ecoa Portal / Version 9.0`
+- スプラッシュ画面: `ecoa Portal / Version 9.5`
 
 ## スマホでの使い方
 

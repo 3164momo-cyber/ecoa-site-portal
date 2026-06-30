@@ -13,18 +13,18 @@
     <link
       rel="stylesheet"
       href="./vendor/leaflet/leaflet.css">
-    <link rel="stylesheet" href="./style.css?v=9.0">
+    <link rel="stylesheet" href="./style.css?v=9.5">
   </head>
   <body>
-    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 9.0">
+    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 9.5">
       <img class="splash-logo" src="./assets/ecoa-portal-logo-white.svg" alt="ecoa Portal">
-      <div class="splash-version">Version 9.0</div>
+      <div class="splash-version">Version 9.5</div>
     </div>
     <div class="app-shell">
       <aside class="sidebar" aria-label="現場管理パネル">
         <header class="app-header">
           <div class="brand-area">
-            <p class="eyebrow">Version 9.0</p>
+            <p class="eyebrow">Version 9.5</p>
             <h1 class="brand-title">
               <img class="brand-logo" src="./assets/ecoa-portal-logo.svg" alt="ecoa Portal">
             </h1>
@@ -45,6 +45,18 @@
           </label>
           <a class="secondary-button" href="./sample-sites.csv" download>サンプルCSV</a>
           <button id="exportCsvButton" class="secondary-button" type="button">表示CSV出力</button>
+          <button id="sharedCsvButton" class="secondary-button primary-admin-button" type="button">共有用CSVを作成</button>
+          <p class="admin-note">この sites.csv を GitHub の data/sites.csv に上書きアップロードすると、全社員の画面に反映されます。</p>
+          <div class="admin-guide" aria-label="GitHub更新手順">
+            <strong>GitHub更新手順</strong>
+            <ol>
+              <li>GitHubの data/sites.csv を開く</li>
+              <li>右上の鉛筆マークまたは Upload files から sites.csv を上書き</li>
+              <li>Commit changes を押す</li>
+              <li>1〜2分後に全社員へ反映</li>
+            </ol>
+            <p>Ver10ではGitHub APIによる直接更新を検討します。Ver9.5ではGitHubトークンを使わない安全な方式です。</p>
+          </div>
         </section>
 
         <button id="mobileFilterToggle" class="mobile-filter-toggle" type="button" aria-controls="filterPanel" aria-expanded="false">検索・絞り込み</button>
@@ -190,11 +202,11 @@
     </div>
 
     <script src="./vendor/leaflet/leaflet.js"></script>
-    <script src="./app.js?v=9.0"></script>
+    <script src="./app.js?v=9.5"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./service-worker.js?v=9.0")
+          navigator.serviceWorker.register("./service-worker.js?v=9.5")
             .then(() => console.log("Service Worker registered"))
             .catch((error) => console.error("Service Worker registration failed:", error));
         });

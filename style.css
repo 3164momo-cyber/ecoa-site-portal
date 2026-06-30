@@ -196,6 +196,67 @@ h1 {
   background: var(--accent-dark);
 }
 
+.primary-admin-button {
+  border-color: var(--accent);
+  background: #eaf7ec;
+  color: var(--accent-dark);
+}
+
+.primary-admin-button:hover {
+  background: #dff1e2;
+}
+
+.admin-note {
+  display: none;
+  grid-column: 1 / -1;
+  margin: 0;
+  border: 1px solid #f1d29a;
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  background: #fff8e8;
+  color: #7a4a00;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+body.is-admin .admin-note {
+  display: block;
+}
+
+.admin-guide {
+  display: none;
+  grid-column: 1 / -1;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.admin-guide strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent-dark);
+  font-size: 13px;
+}
+
+.admin-guide ol {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.admin-guide p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+body.is-admin .admin-guide {
+  display: block;
+}
+
 .file-button input {
   position: absolute;
   width: 1px;
