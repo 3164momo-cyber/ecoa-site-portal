@@ -1,10 +1,10 @@
 # ecoa Site Portal
 
-Version 9.5
+Version 9.6
 
 `ecoa Portal` は、ANDPADから出力した最新ExcelまたはCSVを読み込み、案件検索、地図表示、ANDPAD、工程表へすばやく移動するための社内用ポータルです。
 
-## Ver9.5の運用方針
+## Ver9.6の運用方針
 
 - ANDPADから出力した最新データを唯一のマスターデータとして使用します。
 - GitHub Pages上では `data/sites.csv` を標準データとして自動読み込みします。
@@ -15,7 +15,9 @@ Version 9.5
 - 工事担当フィルターは、読み込んだCSV内の工事担当だけをゼロから集計して表示します。固定担当者一覧は使用しません。
 - 通常利用者は閲覧専用に近い画面です。`?admin=1` を付けた管理者モードだけ、ANDPAD最新データ読込、共有用CSV作成、CSV出力、デバッグ情報を表示します。
 - 同梱の `data/sites.csv` は本番差し替え用です。サンプルデータは入れていません。
-- Ver9.5ではGitHubトークンを使いません。管理者が作成した `sites.csv` をGitHubの `data/sites.csv` へ上書きアップロードする半自動更新方式です。
+- Ver9.6ではGitHubトークンを使いません。管理者が作成した `sites.csv` をGitHubの `data/sites.csv` へ上書きアップロードする半自動更新方式です。
+- スマホ表示では地図を全面表示し、検索・絞り込み・管理者操作は左スライドメニューに格納します。
+- スマホで現場ピンをタップした場合、地図上ポップアップは表示せず、下部の詳細カードだけを表示します。
 
 ## 起動方法
 
@@ -66,7 +68,7 @@ GitHub更新手順:
 3. `Commit changes` を押します。
 4. 1〜2分後に全社員へ反映されます。
 
-Ver10ではGitHub APIを使って管理者ボタン1つで `data/sites.csv` を直接更新する構想です。Ver9.5では安全性を優先し、GitHubトークンを使わない方式にしています。
+Ver10ではGitHub APIを使って管理者ボタン1つで `data/sites.csv` を直接更新する構想です。Ver9.6では安全性を優先し、GitHubトークンを使わない方式にしています。
 
 ## 手動データ読込手順
 
@@ -95,6 +97,16 @@ https://3164momo-cyber.github.io/ecoa-site-portal/?admin=1
 通常URLでは `ANDPAD最新データ読込`、`共有用CSVを作成`、`表示CSV出力`、デバッグ情報を表示しません。管理者URLだけ、更新操作系ボタンとデバッグ情報を表示します。
 
 管理者画面にも「この sites.csv を GitHub の data/sites.csv に上書きアップロードすると、全社員の画面に反映されます。」と表示します。
+
+## スマホ表示
+
+- 初期表示では地図を画面いっぱいに表示します。
+- 画面左上の `検索・絞り込み` を押すと、左からメニューが開きます。
+- メニュー内で検索、工事担当フィルター、ステータスフィルター、市町村別件数、現場一覧を確認できます。
+- `?admin=1` の管理者モードでは、ANDPAD最新データ読込、共有用CSV作成、CSV出力、デバッグ情報も同じメニュー内に表示します。
+- 現場ピンまたは現場一覧をタップすると、画面下部に詳細カードを表示します。
+- スマホでは地図上ポップアップを表示せず、詳細カードから `ANDPADを開く`、`工程表を開く` を押します。
+- 詳細カードは右上の `×` で閉じられます。
 
 ## 使用列
 
@@ -176,7 +188,7 @@ https://3164momo-cyber.github.io/ecoa-site-portal/?admin=1
 - manifest: `manifest.json`
 - Service Worker: `service-worker.js`
 - アイコン: `icons/icon-192.png`、`icons/icon-512.png`、`icons/apple-touch-icon.png`、`icons/favicon.ico`
-- スプラッシュ画面: `ecoa Portal / Version 9.5`
+- スプラッシュ画面: `ecoa Portal / Version 9.6`
 
 ## スマホでの使い方
 

@@ -1,10 +1,10 @@
-const CACHE_NAME = "ecoa-site-portal-v9.5";
+const CACHE_NAME = "ecoa-site-portal-v9.6";
 const STANDARD_DATA_PATH = "/data/sites.csv";
 const APP_ASSETS = [
   "./",
   "./index.html",
-  "./style.css?v=9.5",
-  "./app.js?v=9.5",
+  "./style.css?v=9.6",
+  "./app.js?v=9.6",
   "./manifest.json",
   "./sample-sites.csv",
   "./data/sites.csv",

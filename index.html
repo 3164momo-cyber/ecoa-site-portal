@@ -13,18 +13,18 @@
     <link
       rel="stylesheet"
       href="./vendor/leaflet/leaflet.css">
-    <link rel="stylesheet" href="./style.css?v=9.5">
+    <link rel="stylesheet" href="./style.css?v=9.6">
   </head>
   <body>
-    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 9.5">
+    <div id="splashScreen" class="splash-screen" aria-label="ecoa Portal Version 9.6">
       <img class="splash-logo" src="./assets/ecoa-portal-logo-white.svg" alt="ecoa Portal">
-      <div class="splash-version">Version 9.5</div>
+      <div class="splash-version">Version 9.6</div>
     </div>
     <div class="app-shell">
       <aside class="sidebar" aria-label="現場管理パネル">
         <header class="app-header">
           <div class="brand-area">
-            <p class="eyebrow">Version 9.5</p>
+            <p class="eyebrow">Version 9.6</p>
             <h1 class="brand-title">
               <img class="brand-logo" src="./assets/ecoa-portal-logo.svg" alt="ecoa Portal">
             </h1>
@@ -36,6 +36,7 @@
           <button class="icon-button" id="fitMapButton" type="button" title="表示中のピンに合わせる" aria-label="表示中のピンに合わせる">
             <span aria-hidden="true">⌖</span>
           </button>
+          <button id="mobilePanelClose" class="mobile-panel-close" type="button" aria-label="検索・絞り込みを閉じる">×</button>
         </header>
 
         <section class="control-block upload-block admin-only">
@@ -55,7 +56,7 @@
               <li>Commit changes を押す</li>
               <li>1〜2分後に全社員へ反映</li>
             </ol>
-            <p>Ver10ではGitHub APIによる直接更新を検討します。Ver9.5ではGitHubトークンを使わない安全な方式です。</p>
+            <p>Ver10ではGitHub APIによる直接更新を検討します。Ver9.6ではGitHubトークンを使わない安全な方式です。</p>
           </div>
         </section>
 
@@ -155,6 +156,7 @@
       </aside>
 
       <main class="map-area">
+        <button id="mobileMenuButton" class="mobile-menu-button" type="button" aria-controls="filterPanel" aria-expanded="false">検索・絞り込み</button>
         <div id="map" aria-label="現場地図"></div>
         <div id="mapNotice" class="map-notice" hidden></div>
         <aside id="siteDetailPanel" class="detail-panel" aria-label="現場詳細" hidden>
@@ -202,11 +204,11 @@
     </div>
 
     <script src="./vendor/leaflet/leaflet.js"></script>
-    <script src="./app.js?v=9.5"></script>
+    <script src="./app.js?v=9.6"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./service-worker.js?v=9.5")
+          navigator.serviceWorker.register("./service-worker.js?v=9.6")
             .then(() => console.log("Service Worker registered"))
             .catch((error) => console.error("Service Worker registration failed:", error));
         });

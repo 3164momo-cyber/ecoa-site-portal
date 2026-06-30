@@ -34,7 +34,7 @@
     lng: ["物件経度", "物件 経度", "経度", "lng", "lon", "longitude"]
   };
 
-  const VERSION_LABEL = "Version 9.5";
+  const VERSION_LABEL = "Version 9.6";
   const STANDARD_DATA_URL = "./data/sites.csv";
   const STANDARD_CSV_HEADERS = ["物件都道府県", "物件住所", "物件緯度", "物件経度", "システムID", "案件管理ID", "案件名", "案件フロー", "役割:営業", "役割:工事", "役割:設計"];
   const IS_ADMIN_MODE = new URLSearchParams(window.location.search).get("admin") === "1";
@@ -88,6 +88,8 @@
   };
   elements.updateTimestamp = document.getElementById("updateTimestamp");
   elements.mobileFilterToggle = document.getElementById("mobileFilterToggle");
+  elements.mobileMenuButton = document.getElementById("mobileMenuButton");
+  elements.mobilePanelClose = document.getElementById("mobilePanelClose");
   elements.filterPanel = document.getElementById("filterPanel");
   document.body.classList.toggle("is-admin", IS_ADMIN_MODE);
 
@@ -159,12 +161,21 @@
       scheduleRender();
     });
 
+    if (elements.mobileMenuButton) {
+      elements.mobileMenuButton.addEventListener("click", () => {
+        setMobileFiltersOpen(true);
+      });
+    }
+
+    if (elements.mobilePanelClose) {
+      elements.mobilePanelClose.addEventListener("click", () => {
+        setMobileFiltersOpen(false);
+      });
+    }
+
     if (elements.mobileFilterToggle && elements.filterPanel) {
       elements.mobileFilterToggle.addEventListener("click", () => {
-        const isOpen = elements.filterPanel.classList.toggle("is-open");
-        elements.mobileFilterToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-        elements.mobileFilterToggle.textContent = isOpen ? "検索・絞り込みを閉じる" : "検索・絞り込み";
-        refreshMapLayout(false, 120);
+        setMobileFiltersOpen(!document.body.classList.contains("mobile-filters-open"));
       });
     }
 
@@ -199,7 +210,34 @@
       const site = getSelectedSite();
       if (site) openSchedule(site);
     });
-    window.addEventListener("resize", () => refreshMapLayout(false));
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        setMobileFiltersOpen(false);
+      }
+    });
+    window.addEventListener("resize", () => {
+      if (!isMobileViewport()) {
+        setMobileFiltersOpen(false);
+      }
+      refreshMapLayout(false);
+    });
+  }
+
+  function setMobileFiltersOpen(isOpen) {
+    document.body.classList.toggle("mobile-filters-open", isOpen);
+    if (elements.filterPanel) {
+      elements.filterPanel.classList.toggle("is-open", isOpen);
+    }
+    [elements.mobileMenuButton, elements.mobileFilterToggle].forEach((button) => {
+      if (!button) return;
+      button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      button.textContent = isOpen ? "検索・絞り込みを閉じる" : "検索・絞り込み";
+    });
+    refreshMapLayout(false, 120);
+  }
+
+  function isMobileViewport() {
+    return window.matchMedia && window.matchMedia("(max-width: 820px)").matches;
   }
 
   function applyAdminMode() {
@@ -885,7 +923,13 @@
       }).bindPopup(createPopup(site));
 
       if (typeof marker.on === "function") {
-        marker.on("click", () => openSiteDetail(site, { focusMap: false }));
+        marker.on("click", () => {
+          if (isMobileViewport()) {
+            map.closePopup();
+            marker.closePopup();
+          }
+          openSiteDetail(site, { focusMap: false });
+        });
       }
 
       marker.addTo(markersLayer);
@@ -1140,6 +1184,10 @@
     selectedSiteId = site.id;
     renderSiteDetail();
     syncSelectedSiteCards();
+    if (isMobileViewport()) {
+      setMobileFiltersOpen(false);
+      map.closePopup();
+    }
     if (options.focusMap && hasMapPoint(site)) {
       focusSite(site);
     }
@@ -1147,6 +1195,9 @@
 
   function closeSiteDetail() {
     selectedSiteId = "";
+    if (isMobileViewport()) {
+      map.closePopup();
+    }
     renderSiteDetail();
     syncSelectedSiteCards();
   }
@@ -1190,7 +1241,12 @@
     if (!marker) return;
     refreshMapLayout(false);
     map.setView(marker.getLatLng(), Math.max(map.getZoom(), 14), { animate: true });
-    marker.openPopup();
+    if (isMobileViewport()) {
+      map.closePopup();
+      marker.closePopup();
+    } else {
+      marker.openPopup();
+    }
   }
 
   function fitVisibleMarkers() {
